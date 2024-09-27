@@ -118,10 +118,11 @@ int main() {
 
     while(fabs(u[0] - 1.0) > 1e-8 && fabs(u[n] - 1.0) > 1e-8) {
         // cout << "U: ";
-        // for (int i = 0; i < u.size(); i++) {
-            // cout << u[i] << " ";
-        // }
-        // cout << "\n";
+        cout << T << endl;
+        for (int i = 0; i < u.size(); i++) {
+            cout << u[i] << " ";
+        }
+        cout << "\n";
 
         // rate of balls leaving each group
         vector<double> L = get_leaving_rates(u, m, n, r, s);
@@ -150,13 +151,14 @@ int main() {
         // cout << "\n";
     }
 
-    cout << "Final U: ";
+    // cout << "Final U: ";
+    cout << T << endl;
     for (int i = 0; i < u.size(); i++) {
         cout << u[i] << " ";
     }
     cout << "\n";
 
-    cout << "Total Time Taken: " << T << endl;
+    // cout << "Total Time Taken: " << T << endl;
 
-    return 1;
+    return 0;
 }
