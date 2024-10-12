@@ -1,35 +1,166 @@
 import sys
+import os
 
+import math
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+import pandas as pd
 
-def visualize_distribution_of_groups_over_time(filepath):
+def read_data(filepath):
+    data = []
+    T = []
+    m = 0
+    n = 0
+    r = 0
+    s = 0
     with open(filepath, 'r') as f:
-        data = []
-        T = []
+        first_list = f.readline().split()
+        m = int(first_list[0])
+        n = int(first_list[1])
+        r = float(first_list[2])
+        s = float(first_list[3])
         for line in f:
             numbers = line.split()
-            if len(numbers) == 1:
-                T.append(float(numbers[0]))
-            else:
-                numbers = np.array([float(x) for x in numbers])
-                data.append(numbers)
+            if (len(numbers) != n + 2):
+                print("mismatch")
+                continue
+            T.append(float(numbers[0]))
+            numbers = np.array([float(x) for x in numbers[1:]])
+            data.append(numbers)
         data = np.array(data).T
-        plt.plot(T, data[0], color='red', )
-        plt.plot(T, data[25], color='green')
-        plt.plot(T, data[50], color='blue')
-        plt.legend
-        # for i in range(len(data)):
-        #     plt.plot(T, data[i])
-        plt.show()
+    return m, n, r, s, data, T
+
+def visualize_distribution_of_groups_over_time(file_paths, sim_count):
+    data = []
+    # use index range
+    for i in range(len(file_paths)):
+        filepath = sys.argv[1]+"/"+file_paths[i]
+        _, _, _, _, raw_data, raw_time = read_data(filepath)
+        data.append(raw_data)
+
+    # TODO
+    # use time range
+    # for i in range(1, len(sys.argv)):
+    #     filepath = sys.argv[i]
+    #     raw_data, raw_time = read_data(filepath)
+    #     if min_t_points == -1 or min_t_points > len(raw_time):
+    #         min_t_points = len(raw_time)
+    #     # sim_data = split_by_time_increment(raw_data, raw_time, m, n, start_t, end_t, increment_t)
+    #     # data += sim_data/sim_count
+    #     if len(data) == 0:
+    #         data = raw_data
+    
+    if sim_count == 1:
+        plt.plot(data[0][0], color='red')
+        plt.plot(data[0][25], color='green')
+        plt.plot(data[0][50], color='blue')
+    else:
+        max_len = 0
+        for i in range(sim_count):
+            if len(data[i][0]) > max_len:
+                max_len = len(data[i][0])
+        avg = np.zeros((data[0].shape[0], max_len))
+        for i in range(sim_count):
+            avg[:, :data[i].shape[1]] += data[i] / sim_count
+        # plt.plot(avg[0], color='red')
+        # plt.plot(avg[25], color='green')
+        # plt.plot(avg[50], color='blue')
+        # for i in range(10):
+        #     plt.bar(x, avg[i,0:10])
+        df = pd.DataFrame(avg[:,:10000:1000].T)
+        df.plot(kind="bar", stacked=True)
+    plt.show()
     return
+# # TODO
+# def split_by_time_increment(raw_data, raw_time, m, n, start_t, end_t, increment_t):
+#     data = np.array([np.array([0 for _ in range(start_t, end_t, increment_t)], dtype=np.float64) for _ in range(m+1)])
+#     prev_data = raw_data[:,0]
+#     prev_t = 0
+#     t = 0
+#     for i in range(len(raw_data[0])):
+#         if raw_time[i] < t and prev_t <= raw_time[i]:
+#             print(f"data in interval [{prev_t},{t})")
+#             data[:,i] = raw_data[:,i]
+#             prev_data = data[:, i]
+#             t += increment_t
+#         elif raw_time[i] >= t:
+#             data[:,i] = prev_data
+#             prev_data = data[:, i]
+#             t += increment_t
+#         # else: raw_time < prev_t
+# 
+# 
+#     return data
+
+def visualize_fixation_probabilities(file_paths, sim_shape):
+    # plot probability of fixation to type G for different values of m and n
+    # Arguments:
+    # - file_paths: 
+    # - sim_shape:
+    #   - sim_shape[0]: (start, end, increment) for m (end inclusive)
+    #   - sim_shape[1]: (start, end, increment) for n (end inclusive)
+    #   - sim_shape[2]: number of simulations per (m, n)
+
+    m_group_count = math.ceil((sim_shape[0][1]+1-sim_shape[0][0])/sim_shape[0][2])
+    n_group_count = math.ceil((sim_shape[1][1]+1-sim_shape[1][0])/sim_shape[1][2])
+
+    # data: array of (m values) x (n values)
+    data = np.zeros((m_group_count, n_group_count))
+
+    m_to_idx = {}
+    for i in range(m_group_count):
+        m_to_idx[sim_shape[0][0]+i*sim_shape[0][2]] = i
+    n_to_idx = {}
+    for i in range(n_group_count):
+        n_to_idx[sim_shape[1][0]+i*sim_shape[1][2]] = i
+
+    for file_path in file_paths:
+        m, n, _, _, raw_data, _ = read_data(file_path)
+        if (raw_data[-1][-1] == 1.0):
+            data[m_to_idx[m]][n_to_idx[n]] += 1/sim_shape[2]
+    
+    # heatmap
+    m_ticks = np.arange(sim_shape[0][0], sim_shape[0][1]+1, sim_shape[0][2])
+    n_ticks = np.arange(sim_shape[1][0], sim_shape[1][1]+1, sim_shape[1][2])
+    if (m_group_count > 1 and n_group_count > 1):
+        # heatmap defaults to same ordering as np.array (y-axis increases as we go down, x-axis increases as we go right)
+        # swap ordering of vertical so y-axis increases upwards
+        sns.heatmap(data[::-1], xticklabels=n_ticks, yticklabels=m_ticks[::-1], vmin=0, vmax=1, cbar=True)
+        plt.title("Probability of Fixation to Type G Individuals")
+        plt.xlabel("Number of Individuals per Group (n)")
+        plt.ylabel("Number of Groups (m)")
+        plt.show()
+
+    # line plot
+    for i in range(0, n_group_count, 2):
+        plt.plot(m_ticks, data[:, i], marker='o', linestyle='-', label="n="+str(sim_shape[1][0]+i*sim_shape[1][2]))
+    plt.title("Probability of Fixation to Type G Individuals")
+    plt.xlabel("Number of Groups (m)")
+    plt.ylabel("Probability")
+    plt.legend()
+    plt.show()
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage ./main.py [filename]")
+    if len(sys.argv) < 2:
+        print("Usage ./main.py [data directory]")
         return
+    file_paths = [os.path.abspath(sys.argv[1] + "/" + x) for x in os.listdir(sys.argv[1])]
+    sim_count = len(file_paths)
+    start_t = 0
+    end_t = 600000
+    increment_t = 100
+    n = 50
+    m = 50
+    # data = np.array([np.array([0 for _ in range(start_t, end_t, increment_t)], dtype=np.float64) for _ in range(m+1)])
+    min_t_points = -1
 
-    visualize_distribution_of_groups_over_time(sys.argv[1])
+    # distribution over time
+    # visualize_distribution_of_groups_over_time(file_paths, sim_count)
+
+    # fixation probability vis
+    sim_shape = ((20, 200, 20), (20, 200, 20), 100)
+    visualize_fixation_probabilities(file_paths, sim_shape)
 
 if __name__ == "__main__":
     main()
