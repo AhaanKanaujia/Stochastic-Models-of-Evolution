@@ -110,12 +110,12 @@ vector<double> randomize_initial_distribution(int m, int n) {
 // }
 
 int main(int argc, char** argv) {
-    if (argc != 1 && argc != 2 && argc != 6) {
+    if (argc != 1 && argc != 2 && argc != 7) {
         cout << "Usage: ./main [output_path]" << endl;
-        cout << "or: ./main [output_path] [m] [n] [r] [s]" << endl;
+        cout << "or: ./main [output_path] [m] [n] [r] [s] [full_output=0,1]" << endl;
         return 1;
     }
-    bool only_last_line = 1;
+    bool full_output = 0;
 
     // default to std::cout
     std::ostream* output_stream = &std::cout;
@@ -141,6 +141,7 @@ int main(int argc, char** argv) {
         n = std::stoi(argv[3]);
         r = std::stod(argv[4]);
         s = std::stod(argv[5]);
+        full_output = std::stoi(argv[6]);
     }
     // std::cout << m << " " << n << " " << r << " " << s << endl;
 
@@ -159,7 +160,7 @@ int main(int argc, char** argv) {
 
     while(fabs(u[0] - 1.0) > 1e-8 && fabs(u[n] - 1.0) > 1e-8) {
         // cout << "U: ";
-        if (!only_last_line) {
+        if (full_output) {
             *output_stream << T << " ";
             for (int i = 0; i < u.size(); i++) {
                 *output_stream << " " << u[i];

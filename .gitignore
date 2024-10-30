@@ -1,6 +1,11 @@
-a.out
-output.csv
+# Automatically generated DS_Store on Mac
 **/.DS_Store
-Luo\ Implementation/main
+
+# exclude executables
+a.out
+**/main
 run_sims
+
+# exclude data
 data/**
+output.csv
