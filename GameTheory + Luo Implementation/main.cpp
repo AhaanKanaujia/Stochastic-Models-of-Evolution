@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <random>
 #include <string>
@@ -160,7 +161,27 @@ vector<double> randomize_initial_distribution(int m, int n) {
     return u;
 }
 
-int main() {
+int main(int argc, char** argv) {
+    if (argc != 1 && argc != 2 && argc != 8) {
+        cout << "Usage: ./main [output_path]" << endl;
+        cout << "or: ./main [output_path] [m] [n] [lambda] [w_i] [w_g] [full_output=0,1]" << endl;
+        return 1;
+    }
+
+    // default to std::cout
+    std::ostream* output_stream = &std::cout;
+
+    // if given output file path change stream to filestream
+    std::fstream file;
+    if (argc >= 2) {
+        file.open(argv[1], std::fstream::out);
+        if (!file.is_open()) {
+            file = fstream(argv[1], std::fstream::out);
+        }
+        output_stream = &file;
+    }
+    bool full_output = 0;
+
     int m = 50; // number of groups
     int n = 50; // number of individuals in a group
 
@@ -168,6 +189,15 @@ int main() {
 
     double w_i = 0.01; // individual level events
     double w_g = 0.01; // group level events
+    
+    if (argc == 8) {
+        m = std::stoi(argv[2]);
+        n = std::stoi(argv[3]);
+        lambda = std::stod(argv[4]);
+        w_i = std::stod(argv[5]);
+        w_g = std::stod(argv[6]);
+        full_output = std::stoi(argv[7]);
+    }
     
     // payoff matrix
     double reward = 2;
@@ -195,13 +225,25 @@ int main() {
 
     // cout << "\nStarting Simulation\n" << endl;
 
+
+    *output_stream << m << " " << n << " " << lambda << " " << w_i << " " << w_g << endl;
+    
+
     // groups[i] is the proportion of groups that have i G type individuals, where i in [0..n]
     vector<double> u = randomize_initial_distribution(m, n); // initial distribution of balls in groups
+                                                             //
 
     double T = 0.0; // time
 
     while(fabs(u[0] - 1.0) > 1e-8 && fabs(u[n] - 1.0) > 1e-8) {
         // print_vector(u, "U: ");
+        if (full_output) {
+            *output_stream << T << " ";
+            for (int i = 0; i < u.size(); i++) {
+                *output_stream << " " << u[i];
+            }
+            *output_stream << endl;
+        }
 
         // rate of balls leaving each group
         vector<double> L = get_leaving_rates(u, m, n, G_payoff, pi_c, pi_d, lambda, w_i, w_g);
@@ -233,13 +275,13 @@ int main() {
         // cout << "\n";
     }
 
-    cout << "Final U: ";
+    // cout << "Final U: ";
+    *output_stream << T << " ";
     for (int i = 0; i < u.size(); i++) {
-        cout << u[i] << " ";
+        *output_stream << " " << u[i];
     }
-    cout << "\n";
-
-    cout << "Total Time Taken: " << T << endl;
+    *output_stream << endl;
+    // cout << "Total Time Taken: " << T << endl;
 
     return 0;
 }
