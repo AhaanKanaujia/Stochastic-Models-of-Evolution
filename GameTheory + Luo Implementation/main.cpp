@@ -235,7 +235,8 @@ int main() {
 
     cout << "Final U: ";
     for (int i = 0; i < u.size(); i++) {
-        cout << u[i] << " ";
+        if (u[i] < 1e-8) cout << 0 << " ";
+        else cout << u[i] << " ";
     }
     cout << "\n";
 
