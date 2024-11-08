@@ -110,10 +110,13 @@ vector<double> get_incoming_rates(vector<double> u, int m, int n, vector<double>
 }   
 
 double draw_time_poisson(vector<double> L) {
-    double lambda = 0.0;
-    for (int i = 0; i < L.size(); i++) {
-        lambda += L[i];
-    }
+    // double lambda = 0.0;
+    // for (int i = 0; i < L.size(); i++) {
+    //     lambda += L[i];
+    // }
+
+    double lambda = accumulate(L.begin(), L.end(), 0.0);
+
     random_device rd;
     mt19937 gen(rd());
 
@@ -126,10 +129,12 @@ int draw_random_number(vector<double> draw_prob, string type) {
     random_device rd;
     mt19937 gen(rd());
 
-    double sum = 0.0;
-    for (int i = 0; i < draw_prob.size(); i++) {
-        sum += draw_prob[i];
-    }
+    // double sum = 0.0;
+    // for (int i = 0; i < draw_prob.size(); i++) {
+    //     sum += draw_prob[i];
+    // }
+
+    double sum = accumulate(draw_prob.begin(), draw_prob.end(), 0.0);
 
     vector<double> prob(draw_prob.size(), 0.0);
     for (int i = 0; i < draw_prob.size(); i++) {
@@ -231,7 +236,6 @@ int main(int argc, char** argv) {
 
     // groups[i] is the proportion of groups that have i G type individuals, where i in [0..n]
     vector<double> u = randomize_initial_distribution(m, n); // initial distribution of balls in groups
-                                                             //
 
     double T = 0.0; // time
 
@@ -276,7 +280,7 @@ int main(int argc, char** argv) {
     }
 
     // cout << "Final U: ";
-    *output_stream << T << " ";
+    *output_stream << T << " " << endl;
     for (int i = 0; i < u.size(); i++) {
         *output_stream << " " << u[i];
     }
