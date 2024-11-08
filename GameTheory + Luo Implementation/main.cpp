@@ -8,6 +8,15 @@ using namespace std;
 void print_vector(vector<double> v, string title) {
     cout << title;
     for (int i = 0; i < v.size(); i++) {
+        if (fabs(v[i]) < 1e-8) cout << 0 << " ";
+        else cout << v[i] << " ";
+    }
+    cout << "\n";
+}
+
+void print_vector(vector<int> v, string title) {
+    cout << title;
+    for (int i = 0; i < v.size(); i++) {
         cout << v[i] << " ";
     }
     cout << "\n";
@@ -161,6 +170,8 @@ vector<double> randomize_initial_distribution(int m, int n) {
 }
 
 int main() {
+    int reps = 5; // number of simulations to run
+
     int m = 50; // number of groups
     int n = 50; // number of individuals in a group
 
@@ -193,14 +204,22 @@ int main() {
     vector<double> G_payoff = get_group_payoff(payoff, n);
     // print_vector(G_payoff, "Group Payoff: ");
 
+    // totals[i] is the number of times a simulation converged to groups with i G type individuals, where i in [0..n]
+    vector<int> totals(n + 1, 0);
+
+    // total time all simulations take
+    double T_total = 0.0;
+
     // cout << "\nStarting Simulation\n" << endl;
 
-    // groups[i] is the proportion of groups that have i G type individuals, where i in [0..n]
+    for (int i = 0; i < reps; i++) {
+
+    // u[i] is the proportion of groups that have i G type individuals, where i in [0..n]
     vector<double> u = randomize_initial_distribution(m, n); // initial distribution of balls in groups
 
     double T = 0.0; // time
 
-    while(fabs(u[0] - 1.0) > 1e-8 && fabs(u[n] - 1.0) > 1e-8) {
+    while(fabs(u[0] - 1.0) > 1e-8 && fabs(u[n] - 1.0) > 1e-8) { // while there are groups not purely defectors or cooperators
         // print_vector(u, "U: ");
 
         // rate of balls leaving each group
@@ -233,14 +252,27 @@ int main() {
         // cout << "\n";
     }
 
-    cout << "Final U: ";
-    for (int i = 0; i < u.size(); i++) {
-        if (u[i] < 1e-8) cout << 0 << " ";
-        else cout << u[i] << " ";
-    }
-    cout << "\n";
+    // cout << "Final U: ";
+    // for (int j = 0; j < u.size(); j++) {
+    //     if (u[j] < 1e-8) cout << 0 << " ";
+    //     else cout << u[j] << " ";
+    // }
+    // cout << "\n";
 
-    cout << "Total Time Taken: " << T << endl;
+    print_vector(u, "Final u: ");
+
+    cout << "Time Taken for simulation " + to_string(i + 1) + ": " << T << endl;
+
+    for (unsigned i = 0; i < totals.size(); i++) {
+        if (fabs(u[i]) > 1e-8) totals[i] += u[i];
+    }
+
+    T_total += T;
+    }
+
+    print_vector(totals, "Total convergences: ");
+
+    cout << "Total Time Taken across simulations: " << T_total << endl;
 
     return 0;
 }
