@@ -121,43 +121,29 @@ vector<double> get_incoming_rates(const vector<double>& u, int m, int n, const v
     return G;
 }
 
-double draw_time_poisson(vector<double> L) {
-    // double lambda = 0.0;
-    // for (int i = 0; i < L.size(); i++) {
-    //     lambda += L[i];
-    // }
-
-    double lambda = accumulate(L.begin(), L.end(), 0.0);
-
-    random_device rd;
-    mt19937 gen(rd());
-
-    // continuous time poisson distribution?
-    poisson_distribution<int> pd(lambda);
-    return pd(gen);
+mt19937& get_random_generator() {
+    static random_device rd;
+    static mt19937 gen(rd());
+    return gen;
 }
 
-int draw_random_number(vector<double> draw_prob, string type) {
-    random_device rd;
-    mt19937 gen(rd());
+double draw_time_poisson(const vector<double>& L) {
+    double lambda = accumulate(L.begin(), L.end(), 0.0);
 
-    // double sum = 0.0;
-    // for (int i = 0; i < draw_prob.size(); i++) {
-    //     sum += draw_prob[i];
-    // }
+    poisson_distribution<int> pd(lambda);
+    return pd(get_random_generator());
+}
 
+int draw_random_number(const vector<double>& draw_prob, string type) {
     double sum = accumulate(draw_prob.begin(), draw_prob.end(), 0.0);
 
-    vector<double> prob(draw_prob.size(), 0.0);
-    for (int i = 0; i < draw_prob.size(); i++) {
+    vector<double> prob(draw_prob.size());
+    for (size_t i = 0; i < draw_prob.size(); i++) {
         prob[i] = draw_prob[i] / sum;
     }
 
-    // print_vector(prob, type);
-
     discrete_distribution<int> dd(prob.begin(), prob.end());
-
-    return dd(gen);
+    return dd(get_random_generator());
 }
 
 vector<double> randomize_initial_distribution(int m, int n) {
@@ -170,9 +156,10 @@ vector<double> randomize_initial_distribution(int m, int n) {
         G[i] = dis(gen);
     }
 
+    double inv_m = 1.0 / m;
     vector<double> u(n + 1, 0.0);
     for (int i = 0; i < G.size(); i++) {
-        u[G[i]] += 1.0/m;
+        u[G[i]] += inv_m;
     }
 
     return u;
@@ -250,6 +237,8 @@ int main(int argc, char** argv) {
     vector<double> u = randomize_initial_distribution(m, n); // initial distribution of balls in groups
 
     double T = 0.0; // time
+    
+    double inv_m = 1.0 / m;
 
     while(fabs(u[0] - 1.0) > 1e-8 && fabs(u[n] - 1.0) > 1e-8) {
         // print_vector(u, "U: ");
@@ -281,8 +270,8 @@ int main(int argc, char** argv) {
         // cout << "Placed Group Index: " << I2 << endl;
 
         // update u and t
-        u[I1] -= 1.0/m;
-        u[I2] += 1.0/m;
+        u[I1] -= inv_m;
+        u[I2] += inv_m;
         T += tau;
 
         // cout << "Time Taken for Current Event: " << tau << endl;
