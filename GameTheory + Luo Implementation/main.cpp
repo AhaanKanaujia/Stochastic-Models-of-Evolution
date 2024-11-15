@@ -76,11 +76,12 @@ vector<double> get_leaving_rates(const vector<double>& u, int m, int n, const ve
     L.reserve(n + 1);
     
     vector<double> lambda_u(n + 1, 0.0);
+    double sum = 0.0;
     for (int i = 0; i < n + 1; i++) {
         lambda_u[i] = lambda * u[i] * (1 + w_g * G[i]);
+        sum += lambda_u[i];
     }
 
-    double sum = accumulate(lambda_u.begin(), lambda_u.end(), 0.0);
     double inv_n = 1.0 / n;
 
     L.push_back(m * u[0] * (sum - lambda_u[0]));
@@ -134,7 +135,7 @@ double draw_time_poisson(const vector<double>& L) {
     return pd(get_random_generator());
 }
 
-int draw_random_number(const vector<double>& draw_prob, string type) {
+int draw_random_number(const vector<double>& draw_prob) {
     double sum = accumulate(draw_prob.begin(), draw_prob.end(), 0.0);
 
     vector<double> prob(draw_prob.size());
@@ -259,14 +260,15 @@ int main(int argc, char** argv) {
         // cout << "tau: " << tau << endl;
 
         // draw random number I1, group that the individual is drawn from
-        int I1 = draw_random_number(L, "(L) = Drawing Group Prob: ");
+        // int I1 = draw_random_number(L, "(L) = Drawing Group Prob: ");
+        int I1 = draw_random_number(L);
         // cout << "Drawing Group Index: " << I1 << endl;
 
         // draw random number I2, group that the individual is placed in
         vector<double> G = get_incoming_rates(u, m, n, G_payoff, pi_c, pi_d, lambda, I1, w_i, w_g);
         // print_vector(G, "Incoming Rates: ");
 
-        int I2 = draw_random_number(G, "(G) = Placed Group Prob: ");
+        int I2 = draw_random_number(G);
         // cout << "Placed Group Index: " << I2 << endl;
 
         // update u and t
