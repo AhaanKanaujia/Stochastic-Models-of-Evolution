@@ -105,11 +105,11 @@ vector<double> get_incoming_rates(const vector<double>& u, int m, int n, const v
     double I1_inv_n = I1 * inv_n;
     double one_minus_I1_inv_n = 1 - I1_inv_n;
 
-    if (I1 < n) {
+    if (I1 > 0) {
         G[I1 - 1] = (n - I1) * (1 + w_i * pi_d[I1]) * I1_inv_n + u[I1 - 1] * lambda * (1 + w_g * G_payoff[I1 - 1]);
     }
 
-    if (I1 > 0) {
+    if (I1 < n) {
         G[I1 + 1] = I1 * one_minus_I1_inv_n * (1 + w_i * pi_c[I1]) + u[I1 + 1] * lambda * (1 + w_g * G_payoff[I1 + 1]);
     }
 
