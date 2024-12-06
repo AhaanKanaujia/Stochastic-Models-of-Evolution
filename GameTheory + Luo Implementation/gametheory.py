@@ -78,8 +78,8 @@ def randomize_initial_distribution(m, n):
 
 def main():
     # Parameters
-    m = 100  # number of groups
-    n = 100  # number of individuals in a group
+    m = 20  # number of groups
+    n = 20  # number of individuals in a group
     lambd = 0.1  # group-level events rate
     w_i = 0.01  # individual-level events weight
     w_g = 0.01  # group-level events weight
@@ -104,7 +104,7 @@ def main():
         L = get_leaving_rates(u, m, n, G_payoff, pi_c, pi_d, lambd, w_i, w_g)
         print("Leaving Rates (L):", L)  # Debugging log
         
-        if any(l < 0 for l in L):
+        if any(l < -1e-8 for l in L):
             raise ValueError(f"Negative values in leaving rates (L): {L}")
 
         if sum(L) == 0:
