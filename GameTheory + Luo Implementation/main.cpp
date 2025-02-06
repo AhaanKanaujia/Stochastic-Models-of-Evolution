@@ -168,7 +168,8 @@ vector<double> randomize_initial_distribution(int m, int n) {
 
 int main(int argc, char** argv) {
     if (argc != 1 && argc != 2 && argc != 8) {
-        cout << "Usage: ./main [output_path]" << endl;
+        cout << "Usage: ./main" << endl;
+        cout << "or: ./main [output_path]" << endl;
         cout << "or: ./main [output_path] [m] [n] [lambda] [w_i] [w_g] [full_output=0,1]" << endl;
         return 1;
     }
@@ -190,7 +191,7 @@ int main(int argc, char** argv) {
     int m = 50; // number of groups
     int n = 50; // number of individuals in a group
 
-    double lambda = 0.1; // group level events rate
+    double lambda = 2.1; // group level events rate
 
     double w_i = 0.01; // individual level events
     double w_g = 0.01; // group level events
@@ -205,9 +206,9 @@ int main(int argc, char** argv) {
     }
     
     // payoff matrix
-    double reward = 2;
-    double sucker = -1;
-    double temptation = 1;
+    double reward = 10;
+    double sucker = -5;
+    double temptation = 5;
     double punishment = 0;
     vector< vector<double> > payoff(2, vector<double>(2, 0.0));
 
@@ -280,7 +281,7 @@ int main(int argc, char** argv) {
     }
 
     // cout << "Final U: ";
-    *output_stream << T << " " << endl;
+    *output_stream << T << " ";
     for (int i = 0; i < u.size(); i++) {
         *output_stream << " " << u[i];
     }

@@ -42,21 +42,21 @@ int main(int argc, char** argv) {
     strcpy(output_filepath, argv[2]);
     size_t initial_len = strlen(output_filepath);
 
-    int full_output = 1;
+    int full_output = 0;
 
     int model = atoi(argv[4]);
     
-    int m_start = 100;
+    int m_start = 20;
     int m_end = 100; // (inclusive)
     int m_inc = 20;
 
-    int n_start = 100;
+    int n_start = 20;
     int n_end = 100; // (inclusive)
     int n_inc = 20;
 
     // defaults
-    int m = 50;
-    int n = 50;
+    int m = 10;
+    int n = 100;
     double r = 0.2;
     double s = 0.2;
     double lambda = 0.1;
