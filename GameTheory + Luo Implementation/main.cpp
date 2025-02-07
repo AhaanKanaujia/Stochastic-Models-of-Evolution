@@ -71,43 +71,55 @@ vector<double> get_group_payoff(vector< vector<double> > payoff, int n) {
     return G;
 }
 
-vector<double> get_leaving_rates(vector<double> u, int m, int n, vector<double> G, vector<double> pi_c, vector<double> pi_d, double lambda, double w_i, double w_g) {
-    vector<double> L(n + 1, 0.0);
-
-    double sum = 0.0;
+vector<double> get_leaving_rates(const vector<double>& u, int m, int n, const vector<double>& G, const vector<double>& pi_c, const vector<double>& pi_d, double lambda, double w_i, double w_g) {
+    vector<double> L;
+    L.reserve(n + 1);
+    
+    vector<double> lambda_u(n + 1, 0.0);
     for (int i = 0; i < n + 1; i++) {
-        sum += lambda * u[i] * (1 + w_g * G[i]);
+        lambda_u[i] = lambda * u[i] * (1 + w_g * G[i]);
     }
 
-    for (int i = 0; i < n + 1; i++) {
-        double term_sum = sum - lambda * u[i] * (1 + w_g * G[i]);
+    double sum = accumulate(lambda_u.begin(), lambda_u.end(), 0.0);
+    double inv_n = 1.0 / n;
 
-        if (i == 0 || i == n) {
-            L[i] = m * u[i] * term_sum;
-        } else {
-            double coop_def_sum = m * u[i] * (n - i) * i/n * (2 + w_i * pi_d[i] + w_i * pi_c[i]);
-            L[i] = coop_def_sum + m * u[i] * term_sum;
-        }
+    L.push_back(m * u[0] * (sum - lambda_u[0]));
+
+    for (int i = 1; i < n; i++) {
+        double term_sum = sum - lambda_u[i];
+        double common_sum = m * u[i] * term_sum;
+        double coop_def_sum = m * u[i] * (n - i) * i * inv_n * (2 + w_i * (pi_d[i] + pi_c[i]));
+        L.push_back(coop_def_sum + common_sum);
     }
+
+    L.push_back(m * u[n] * (sum - lambda_u[n]));
 
     return L;
 }
 
-vector<double> get_incoming_rates(vector<double> u, int m, int n, vector<double> G_payoff, vector<double> pi_c, vector<double> pi_d, double lambda, double I1, double w_i, double w_g) {
+vector<double> get_incoming_rates(const vector<double>& u, int m, int n, const vector<double>& G_payoff, const vector<double>& pi_c, const vector<double>& pi_d, double lambda, double I1, double w_i, double w_g) {
     vector<double> G(n + 1, 0.0);
 
+    double inv_n = 1.0 / n;
+    double I1_inv_n = I1 * inv_n;
+    double one_minus_I1_inv_n = 1 - I1_inv_n;
+
+    if (I1 < n) {
+        G[I1 - 1] = (n - I1) * (1 + w_i * pi_d[I1]) * I1_inv_n + u[I1 - 1] * lambda * (1 + w_g * G_payoff[I1 - 1]);
+    }
+
+    if (I1 > 0) {
+        G[I1 + 1] = I1 * one_minus_I1_inv_n * (1 + w_i * pi_c[I1]) + u[I1 + 1] * lambda * (1 + w_g * G_payoff[I1 + 1]);
+    }
+
     for (int i = 0; i < n + 1; i++) {
-        if (i == I1 - 1 && I1 < n) {
-            G[i] = (n - I1) * (1 + w_i * pi_d[I1]) * I1/n + u[I1 - 1] * lambda * (1 + w_g * G_payoff[I1 - 1]);
-        } else if (i == I1 + 1 && I1 > 0) { 
-            G[i] = I1 * (1 - I1/n) * (1 + w_i * pi_c[I1]) + u[I1 + 1] * lambda * (1 + w_g * G_payoff[I1 + 1]);
-        } else if (abs(i - I1) > 1) {
+        if (abs(i - I1) > 1) {
             G[i] = u[i] * lambda * (1 + w_g * G_payoff[i]);
         }
     }
 
     return G;
-}   
+}
 
 double draw_time_poisson(vector<double> L) {
     // double lambda = 0.0;
@@ -188,8 +200,8 @@ int main(int argc, char** argv) {
     }
     bool full_output = 0;
 
-    int m = 50; // number of groups
-    int n = 50; // number of individuals in a group
+    int m = 100; // number of groups
+    int n = 100; // number of individuals in a group
 
     double lambda = 2.1; // group level events rate
 
