@@ -153,10 +153,10 @@ vector<double> randomize_initial_distribution(int m, int n) {
         G[i] = dis(gen);
     }
 
-    double inv_m = 1.0 / m;
+    // double inv_m = 1.0 / m;
     vector<double> u(n + 1, 0.0);
     for (int i = 0; i < G.size(); i++) {
-        u[G[i]] += inv_m;
+        u[G[i]] += 1;
     }
 
     return u;
@@ -181,10 +181,10 @@ int main(int argc, char** argv) {
         }
         output_stream = &file;
     }
-    bool full_output = 0;
+    bool full_output = 1;
 
-    int m = 100; // number of groups
-    int n = 100; // number of individuals in a group
+    int m = 20; // number of groups
+    int n = 20; // number of individuals in a group
 
     double lambda = 0.1; // group level events rate
 
@@ -234,9 +234,9 @@ int main(int argc, char** argv) {
 
     double T = 0.0; // time
     
-    double inv_m = 1.0 / m;
+    // double inv_m = 1.0 / m;
 
-    while(fabs(u[0] - 1.0) > 1e-8 && fabs(u[n] - 1.0) > 1e-8) {
+    while(fabs(u[0] - m) > 1e-8 && fabs(u[n] - m) > 1e-8) {
         // print_vector(u, "U: ");
         if (full_output) {
             *output_stream << T << " ";
@@ -267,8 +267,8 @@ int main(int argc, char** argv) {
         // cout << "Placed Group Index: " << I2 << endl;
 
         // update u and t
-        u[I1] -= inv_m;
-        u[I2] += inv_m;
+        u[I1] -= 1;
+        u[I2] += 1;
         T += tau;
 
         // cout << "Time Taken for Current Event: " << tau << endl;
