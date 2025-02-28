@@ -262,6 +262,3 @@ def main():
     # sim_shape = ((20, 200, 20), (20, 200, 20), 100)
     # visualize_fixation_times(file_paths, sim_shape, model)
     # -----------------------------------------------------------------
-
-if __name__ == "__main__":
-    main()

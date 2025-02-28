@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
     double r = 0.1; // proportionality constant
     double s = 0.05; // proportionality constant
     
-    if (argc == 6) {
+    if (argc == 7) {
         m = std::stoi(argv[2]);
         n = std::stoi(argv[3]);
         r = std::stod(argv[4]);

@@ -179,10 +179,10 @@ vector<double> randomize_initial_distribution(int m, int n) {
 }
 
 int main(int argc, char** argv) {
-    if (argc != 1 && argc != 2 && argc != 8) {
+    if (argc != 1 && argc != 2 && argc != 12) {
         cout << "Usage: ./main" << endl;
         cout << "or: ./main [output_path]" << endl;
-        cout << "or: ./main [output_path] [m] [n] [lambda] [w_i] [w_g] [full_output=0,1]" << endl;
+        cout << "or: ./main [output_path] [m] [n] [R] [S] [T] [P] [lambda] [w_i] [w_g] [full_output=0,1]" << endl;
         return 1;
     }
 
@@ -200,28 +200,33 @@ int main(int argc, char** argv) {
     }
     bool full_output = 0;
 
-    int m = 100; // number of groups
-    int n = 100; // number of individuals in a group
+    int m = 20; // number of groups
+    int n = 20; // number of individuals in a group
 
-    double lambda = 2.1; // group level events rate
+    double lambda = 2; // group level events rate
 
     double w_i = 0.01; // individual level events
     double w_g = 0.01; // group level events
-    
-    if (argc == 8) {
-        m = std::stoi(argv[2]);
-        n = std::stoi(argv[3]);
-        lambda = std::stod(argv[4]);
-        w_i = std::stod(argv[5]);
-        w_g = std::stod(argv[6]);
-        full_output = std::stoi(argv[7]);
-    }
     
     // payoff matrix
     double reward = 10;
     double sucker = -5;
     double temptation = 5;
     double punishment = 0;
+
+    if (argc == 12) {
+        m = std::stoi(argv[2]);
+        n = std::stoi(argv[3]);
+        reward = std::stod(argv[4]);
+        sucker = std::stod(argv[5]);
+        temptation = std::stod(argv[6]);
+        punishment = std::stod(argv[7]);
+        lambda = std::stod(argv[8]);
+        w_i = std::stod(argv[9]);
+        w_g = std::stod(argv[10]);
+        full_output = std::stoi(argv[11]);
+    }
+
     vector< vector<double> > payoff(2, vector<double>(2, 0.0));
 
     payoff[0][0] = reward;
